@@ -22,9 +22,8 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // GET: Books
         public async Task<IActionResult> Index()
         {
-              return _context.Books != null ? 
-                          View(await _context.Books.ToListAsync()) :
-                          Problem("Entity set 'LibraryContext.Books'  is null.");
+            var libraryContext = _context.Books.Include(b => b.Author);
+            return View(await libraryContext.ToListAsync());
         }
 
         // GET: Books/Details/5
@@ -36,6 +35,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
             }
 
             var book = await _context.Books
+                .Include(b => b.Author)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (book == null)
             {
@@ -48,6 +48,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // GET: Books/Create
         public IActionResult Create()
         {
+            ViewData["AuthorID"] = new SelectList(_context.Authors, "ID", "FullName");
             return View();
         }
 
@@ -58,14 +59,13 @@ namespace Goldan_Maria_EB_lab2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ID,Title,AuthorID,Price")] Book book)
         {
-            ViewData["AuthorID"] = new SelectList(_context.Set<Author>(), "ID", "FullName");
-
             if (ModelState.IsValid)
             {
                 _context.Add(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["AuthorID"] = new SelectList(_context.Authors, "ID", "FullName", book.AuthorID);
             return View(book);
         }
 
@@ -82,6 +82,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
             {
                 return NotFound();
             }
+            ViewData["AuthorID"] = new SelectList(_context.Authors, "ID", "FullName", book.AuthorID);
             return View(book);
         }
 
@@ -90,7 +91,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Title,Author,Price")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Title,AuthorID,Price")] Book book)
         {
             if (id != book.ID)
             {
@@ -117,6 +118,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["AuthorID"] = new SelectList(_context.Authors, "ID", "FullName", book.AuthorID);
             return View(book);
         }
 
@@ -129,6 +131,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
             }
 
             var book = await _context.Books
+                .Include(b => b.Author)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (book == null)
             {
