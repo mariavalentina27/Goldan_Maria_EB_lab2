@@ -100,12 +100,70 @@ namespace Goldan_Maria_EB_lab2.Controllers
                 return NotFound();
             }
 
-            var publisher = await _context.Publishers.FindAsync(id);
+            var publisher = await _context.Publishers
+                .Include(p => p.PublishedBooks)
+                .ThenInclude(p => p.Book)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.ID == id);
+
             if (publisher == null)
             {
                 return NotFound();
             }
+
+            PopulatePublishedBookData(publisher);
+
             return View(publisher);
+        }
+
+        private void PopulatePublishedBookData(Publisher publisher)
+        {
+            var allBooks = _context.Books;
+            var publisherBooks = new HashSet<int>(publisher.PublishedBooks.Select(c => c.BookID));
+            var viewModel = new List<PublishedBookData>();
+
+            foreach (var book in allBooks)
+            {
+                viewModel.Add(new PublishedBookData
+                {
+                    BookID = book.ID,
+                    Title = book.Title,
+                    IsPublished = publisherBooks.Contains(book.ID)
+                });
+            }
+
+            ViewData["Books"] = viewModel;
+        }
+
+        private void UpdatePublishedBooks(string[] selectedBooks, Publisher publisherToUpdate)
+        {
+            if (selectedBooks == null)
+            {
+                publisherToUpdate.PublishedBooks = new List<PublishedBook>();
+                return;
+            }
+
+            var selectedBooksHS = new HashSet<string>(selectedBooks);
+            var publishedBooks = new HashSet<int>(publisherToUpdate.PublishedBooks.Select(c => c.Book.ID));
+
+            foreach (var book in _context.Books)
+            {
+                if (selectedBooksHS.Contains(book.ID.ToString()))
+                {
+                    if (!publishedBooks.Contains(book.ID))
+                    {
+                        publisherToUpdate.PublishedBooks.Add(new PublishedBook { PublisherID = publisherToUpdate.ID, BookID = book.ID });
+                    }
+                }
+                else
+                {
+                    if (publishedBooks.Contains(book.ID))
+                    {
+                        PublishedBook bookToRemove = publisherToUpdate.PublishedBooks.FirstOrDefault(i => i.BookID == book.ID);
+                        _context.Remove(bookToRemove);
+                    }
+                }
+            }
         }
 
         // POST: Publishers/Edit/5
@@ -113,34 +171,37 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,PublisherName,Adress")] Publisher publisher)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,PublisherName,Adress")] Publisher publisher, string[] selectedBooks)
         {
             if (id != publisher.ID)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            var publisherToUpdate = await _context.Publishers
+                .Include(i => i.PublishedBooks)
+                    .ThenInclude(i => i.Book)
+                .FirstOrDefaultAsync(m => m.ID == id);
+
+            if (await TryUpdateModelAsync<Publisher>(publisherToUpdate, "", i => i.PublisherName, i => i.Adress))
             {
+                UpdatePublishedBooks(selectedBooks, publisherToUpdate);
                 try
                 {
-                    _context.Update(publisher);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateException /* ex */)
                 {
-                    if (!PublisherExists(publisher.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    ModelState.AddModelError("", "Unable to save changes. " +
+                    "Try again, and if the problem persists, ");
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(publisher);
+
+            UpdatePublishedBooks(selectedBooks, publisherToUpdate);
+            PopulatePublishedBookData(publisherToUpdate);
+            
+            return View(publisherToUpdate);
         }
 
         // GET: Publishers/Delete/5

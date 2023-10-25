@@ -11,6 +11,6 @@ namespace Goldan_Maria_EB_lab2.Models
 		public string PublisherName { get; set; }
 		[StringLength(70)]
 		public string Adress { get; set; }
-		public ICollection<PublishedBook> PublishedBooks { get; set; }
+		public ICollection<PublishedBook>? PublishedBooks { get; set; }
 	}
 }

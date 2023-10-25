@@ -112,7 +112,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
                 ModelState.AddModelError("", "Unable to save changes. " + "Try again, and if the problem persists ");
             }
             
-            ViewData["AuthorID"] = new SelectList(_context.Authors, "ID", "FullName", book.AuthorID);
+            ViewData["AuthorID"] = new SelectList(_context.Authors, "ID", "FullName");
             return View(book);
         }
 

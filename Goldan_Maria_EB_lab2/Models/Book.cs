@@ -12,6 +12,6 @@ namespace Goldan_Maria_EB_lab2.Models
 		[Column(TypeName = "decimal(6, 2)")]
 		public decimal Price { get; set; }
         public ICollection<Order>? Orders { get; set; }
-		public ICollection<PublishedBook> PublishedBooks { get; set; }
+		public ICollection<PublishedBook>? PublishedBooks { get; set; }
 	}
 }
