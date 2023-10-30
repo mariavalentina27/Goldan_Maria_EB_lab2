@@ -63,6 +63,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // GET: Customers/Create
         public IActionResult Create()
         {
+            ViewData["CityID"] = new SelectList(_context.Cities, "ID", "ID");
             return View();
         }
 
@@ -71,7 +72,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Name,Adress,BirthDate")] Customer customer)
+        public async Task<IActionResult> Create([Bind("ID,Name,Adress,CityID,BirthDate")] Customer customer)
         {
             if (!ModelState.IsValid)
             {
@@ -82,8 +83,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
             {
                 var client = new HttpClient();
                 string json = JsonConvert.SerializeObject(customer);
-                var response = await client.PostAsync(_baseUrl,
-                new StringContent(json, Encoding.UTF8, "application/json"));
+                var response = await client.PostAsync(_baseUrl, new StringContent(json, Encoding.UTF8, "application/json"));
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -95,6 +95,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
                 ModelState.AddModelError(string.Empty, $"Unable to create record: {ex.Message}");
             }
 
+            ViewData["CityID"] = new SelectList(_context.Cities, "ID", "ID");
             return View(customer);
         }
 
@@ -116,6 +117,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
                 return View(customer);
             }
 
+            ViewData["CityID"] = new SelectList(_context.Cities, "ID", "CityName");
             return new NotFoundResult();
         }
 
@@ -124,7 +126,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Adress,BirthDate")] Customer customer)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Adress,CityID,BirthDate")] Customer customer)
         {
             if (id != customer.ID)
             {
