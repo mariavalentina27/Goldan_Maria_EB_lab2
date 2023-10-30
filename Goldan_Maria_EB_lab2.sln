@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Goldan_Maria_EB_lab2", "Goldan_Maria_EB_lab2\Goldan_Maria_EB_lab2.csproj", "{A7408B0E-95D6-48C5-AAB7-D6D7B22F4289}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Goldan_Maria_EB_lab2", "Goldan_Maria_EB_lab2\Goldan_Maria_EB_lab2.csproj", "{A7408B0E-95D6-48C5-AAB7-D6D7B22F4289}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryModel", "LibraryModel\LibraryModel.csproj", "{1CD8A59A-10F4-4CC9-B6A2-6CACE315841E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryWebAPI", "LibraryWebAPI\LibraryWebAPI.csproj", "{12AD566F-33EF-42A7-B7B2-CF8820B186E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{A7408B0E-95D6-48C5-AAB7-D6D7B22F4289}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7408B0E-95D6-48C5-AAB7-D6D7B22F4289}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7408B0E-95D6-48C5-AAB7-D6D7B22F4289}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CD8A59A-10F4-4CC9-B6A2-6CACE315841E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CD8A59A-10F4-4CC9-B6A2-6CACE315841E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CD8A59A-10F4-4CC9-B6A2-6CACE315841E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CD8A59A-10F4-4CC9-B6A2-6CACE315841E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12AD566F-33EF-42A7-B7B2-CF8820B186E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12AD566F-33EF-42A7-B7B2-CF8820B186E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12AD566F-33EF-42A7-B7B2-CF8820B186E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12AD566F-33EF-42A7-B7B2-CF8820B186E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
