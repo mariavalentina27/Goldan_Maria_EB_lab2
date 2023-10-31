@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Goldan_Maria_EB_lab2.Data;
 using Goldan_Maria_EB_lab2.Models;
+using LibraryModel.Models;
 
 namespace LibraryWebAPI.Controllers
 {
@@ -23,24 +24,69 @@ namespace LibraryWebAPI.Controllers
 
         // GET: api/Customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
+        public async Task<ActionResult<IEnumerable<CustomerDTO>>> GetCustomers()
         {
-          if (_context.Customers == null)
-          {
-              return NotFound();
-          }
-            return await _context.Customers.ToListAsync();
+            if (_context.Customers == null)
+            {
+                return NotFound();
+            }
+
+            //return await _context.Customers.Include(c => c.City).AsNoTracking().ToListAsync();
+            return await _context.Customers.Join(
+            _context.Cities,
+            customer => customer.CityID,
+            city => city.ID,
+            (customer, city) => new CustomerDTO
+            {
+                ID = customer.ID,
+                Name = customer.Name,
+                Adress = customer.Adress,
+                CityName = city.CityName,
+            })
+            .AsNoTracking()
+            .ToListAsync();
         }
 
         // GET: api/Customers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Customer>> GetCustomer(int id)
         {
-          if (_context.Customers == null)
-          {
-              return NotFound();
-          }
-            var customer = await _context.Customers.FindAsync(id);
+            if (_context.Customers == null)
+            {
+                return NotFound();
+            }
+
+            var customer = await _context.Customers
+                .Where(c => c.ID == id)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            return customer;
+        }
+
+        [HttpGet("dto/{id}")]
+        public async Task<ActionResult<CustomerDTO>> GetCustomerDto(int id)
+        {
+            var customer = await _context.Customers
+                .Where(c => c.ID == id)
+                .Join(
+                    _context.Cities,
+                    customer => customer.CityID,
+                    city => city.ID,
+                    (customer, city) => new CustomerDTO
+                    {
+                        ID = customer.ID,
+                        Name = customer.Name,
+                        Adress = customer.Adress,
+                        CityName = city.CityName,
+                    })
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
 
             if (customer == null)
             {
@@ -86,10 +132,11 @@ namespace LibraryWebAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
-          if (_context.Customers == null)
-          {
-              return Problem("Entity set 'LibraryContext.Customers'  is null.");
-          }
+            if (_context.Customers == null)
+            {
+                return Problem("Entity set 'LibraryContext.Customers'  is null.");
+            }
+
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
 
@@ -104,7 +151,9 @@ namespace LibraryWebAPI.Controllers
             {
                 return NotFound();
             }
+
             var customer = await _context.Customers.FindAsync(id);
+
             if (customer == null)
             {
                 return NotFound();

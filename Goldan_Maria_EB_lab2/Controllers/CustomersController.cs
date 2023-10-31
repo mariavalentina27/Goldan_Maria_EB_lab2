@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Goldan_Maria_EB_lab2.Data;
 using Goldan_Maria_EB_lab2.Models;
+using LibraryModel.Models;
 
 namespace Goldan_Maria_EB_lab2.Controllers
 {
@@ -17,6 +18,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
     {
         private readonly LibraryContext _context;
         private string _baseUrl = "http://localhost:5108/api/Customers";
+        private string _baseUrlCities = "http://localhost:5108/api/Cities";
 
         public CustomersController(LibraryContext context)
         {
@@ -31,8 +33,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                var customers = JsonConvert.DeserializeObject<List<Customer>>(await response.Content.
-                ReadAsStringAsync());
+                var customers = JsonConvert.DeserializeObject<List<CustomerDTO>>(await response.Content.ReadAsStringAsync());
                 return View(customers);
             }
 
@@ -42,18 +43,17 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // GET: Customers/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Customers == null)
+            if (id == null)
             {
                 return new BadRequestResult();
             }
 
             var client = new HttpClient();
-            var response = await client.GetAsync($"{_baseUrl}/{id.Value}");
+            var response = await client.GetAsync($"{_baseUrl}/dto/{id.Value}");
 
             if (response.IsSuccessStatusCode)
             {
-                var customer = JsonConvert.DeserializeObject<Customer>(
-                await response.Content.ReadAsStringAsync());
+                var customer = JsonConvert.DeserializeObject<CustomerDTO>(await response.Content.ReadAsStringAsync());
                 return View(customer);
             }
 
@@ -61,9 +61,17 @@ namespace Goldan_Maria_EB_lab2.Controllers
         }
 
         // GET: Customers/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["CityID"] = new SelectList(_context.Cities, "ID", "ID");
+            var client = new HttpClient();
+            var response = await client.GetAsync(_baseUrlCities);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var cities = JsonConvert.DeserializeObject<List<City>>(await response.Content.ReadAsStringAsync());
+                ViewData["CityID"] = new SelectList(cities, "ID", "CityName");
+            }
+
             return View();
         }
 
@@ -74,11 +82,8 @@ namespace Goldan_Maria_EB_lab2.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ID,Name,Adress,CityID,BirthDate")] Customer customer)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(customer);
-            }
-
+            if (!ModelState.IsValid) return View(customer);
+            
             try
             {
                 var client = new HttpClient();
@@ -95,65 +100,13 @@ namespace Goldan_Maria_EB_lab2.Controllers
                 ModelState.AddModelError(string.Empty, $"Unable to create record: {ex.Message}");
             }
 
-            ViewData["CityID"] = new SelectList(_context.Cities, "ID", "ID");
             return View(customer);
         }
 
         // GET: Customers/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Customers == null)
-            {
-                return new BadRequestResult();
-            }
-
-            var client = new HttpClient();
-            var response = await client.GetAsync($"{_baseUrl}/{id.Value}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var customer = JsonConvert.DeserializeObject<Customer>(
-                await response.Content.ReadAsStringAsync());
-                return View(customer);
-            }
-
-            ViewData["CityID"] = new SelectList(_context.Cities, "ID", "CityName");
-            return new NotFoundResult();
-        }
-
-        // POST: Customers/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Adress,CityID,BirthDate")] Customer customer)
-        {
-            if (id != customer.ID)
-            {
-                return new BadRequestResult();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View(customer);
-            }
-
-            var client = new HttpClient();
-            string json = JsonConvert.SerializeObject(customer);
-            var response = await client.PutAsync($"{_baseUrl}/{customer.ID}",
-            new StringContent(json, Encoding.UTF8, "application/json"));
-
-            if (response.IsSuccessStatusCode)
-            {
-                return RedirectToAction("Index");
-            }
-            return View(customer);
-        }
-
-        // GET: Customers/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Customers == null)
+            if (id == null)
             {
                 return new BadRequestResult();
             }
@@ -164,6 +117,55 @@ namespace Goldan_Maria_EB_lab2.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var customer = JsonConvert.DeserializeObject<Customer>(await response.Content.ReadAsStringAsync());
+                response = await client.GetAsync(_baseUrlCities);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var cities = JsonConvert.DeserializeObject<List<City>>(await response.Content.ReadAsStringAsync());
+                    ViewData["CityID"] = new SelectList(cities, "ID", "CityName");
+                }
+
+                return View(customer);
+            }
+
+            return new NotFoundResult();
+        }
+
+        // POST: Customers/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,Adress,CityID,BirthDate")] Customer customer)
+        {
+            if (!ModelState.IsValid) return View(customer);
+
+            var client = new HttpClient();
+            string json = JsonConvert.SerializeObject(customer);
+            var response = await client.PutAsync($"{_baseUrl}/{customer.ID}",new StringContent(json, Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(customer);
+        }
+
+        // GET: Customers/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return new BadRequestResult();
+            }
+
+            var client = new HttpClient();
+            var response = await client.GetAsync($"{_baseUrl}/dto/{id.Value}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var customer = JsonConvert.DeserializeObject<CustomerDTO>(await response.Content.ReadAsStringAsync());
                 return View(customer);
             }
 
@@ -173,28 +175,26 @@ namespace Goldan_Maria_EB_lab2.Controllers
         // POST: Customers/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id, [Bind("ID")] Customer customer)
+        public async Task<IActionResult> Delete([Bind("ID")] CustomerDTO customer)
         {
-            if (_context.Customers == null)
-            {
-                return Problem("Entity set 'LibraryContext.Customers'  is null.");
-            }
-
             try
             {
                 var client = new HttpClient();
-                HttpRequestMessage request =
-                new HttpRequestMessage(HttpMethod.Delete, $"{_baseUrl}/{customer.ID}")
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, $"{_baseUrl}/{customer.ID}")
                 {
                     Content = new StringContent(JsonConvert.SerializeObject(customer), Encoding.UTF8, "application/json")
                 };
+
                 var response = await client.SendAsync(request);
+
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError(string.Empty, $"Unable to delete record: {ex.Message}");
             }
+
             return View(customer);
         }
 
