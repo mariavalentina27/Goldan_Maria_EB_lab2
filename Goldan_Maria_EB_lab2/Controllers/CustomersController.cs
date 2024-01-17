@@ -11,10 +11,12 @@ using Microsoft.EntityFrameworkCore;
 using Goldan_Maria_EB_lab2.Data;
 using Goldan_Maria_EB_lab2.Models;
 using LibraryModel.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Goldan_Maria_EB_lab2.Controllers
 {
-    public class CustomersController : Controller
+	[Authorize(Policy = "SalesManager")]
+	public class CustomersController : Controller
     {
         private readonly LibraryContext _context;
         private string _baseUrl = "http://localhost:5108/api/Customers";

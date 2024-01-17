@@ -9,10 +9,12 @@ using Goldan_Maria_EB_lab2.Data;
 using Goldan_Maria_EB_lab2.Models;
 using Goldan_Maria_EB_lab2.Models.LibraryViewModels;
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Goldan_Maria_EB_lab2.Controllers
 {
-    public class PublishersController : Controller
+	[Authorize(Policy = "OnlySales")]
+	public class PublishersController : Controller
     {
         private readonly LibraryContext _context;
 

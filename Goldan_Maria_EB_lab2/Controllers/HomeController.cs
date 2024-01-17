@@ -4,6 +4,7 @@ using Goldan_Maria_EB_lab2.Models.LibraryViewModel;
 using Goldan_Maria_EB_lab2.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Goldan_Maria_EB_lab2.Controllers
 {
@@ -28,6 +29,7 @@ namespace Goldan_Maria_EB_lab2.Controllers
             return View();
         }
 
+        [Authorize]
 		public IActionResult Chat() 
         {
             return View();

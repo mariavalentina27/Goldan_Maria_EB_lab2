@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Goldan_Maria_EB_lab2.Data;
 using Goldan_Maria_EB_lab2.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Goldan_Maria_EB_lab2.Controllers
 {
-    public class BooksController : Controller
+	[Authorize(Roles = "Employee")]
+	public class BooksController : Controller
     {
         private readonly LibraryContext _context;
 
@@ -19,8 +21,9 @@ namespace Goldan_Maria_EB_lab2.Controllers
             _context = context;
         }
 
-        // GET: Books
-        public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
+		// GET: Books
+		[AllowAnonymous]
+		public async Task<IActionResult> Index(string sortOrder, string searchString, string currentFilter, int? pageNumber)
         {
             ViewData["CurrentSort"] = sortOrder;
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortOrder) ? "title_desc" : ""; 
@@ -61,8 +64,9 @@ namespace Goldan_Maria_EB_lab2.Controllers
             return View(await PaginatedList<Book>.CreateAsync(books.Include(b => b.Author).AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
-        // GET: Books/Details/5
-        public async Task<IActionResult> Details(int? id)
+		// GET: Books/Details/5
+		[AllowAnonymous]
+		public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Books == null)
             {
